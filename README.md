@@ -1,4 +1,4 @@
-# DeepVec: Determine Suitable Tests to Enhance the Robustness of Recurrent Neural Networks
+# DeepVec: State-vector Aware Test Suites Selection for Enhancing Recurrent Neural Network
 
 DeepVec has conducted experiments on the combination of 6 models and data sets. To illustrate the usage of the code of this project, the example of testing LSTM model trained with MNIST data set is illustrated as follows.
 
