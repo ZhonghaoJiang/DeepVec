@@ -9,7 +9,7 @@ import numpy as np
 import os
 from keras.callbacks import ModelCheckpoint
 import argparse
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
 
 class FashionLSTMClassifier:
@@ -19,7 +19,7 @@ class FashionLSTMClassifier:
         self.n_units = 128  # hidden LSTM units
         self.n_inputs = 28  # rows of 28 pixels (a fashion img is 28x28)
         self.n_classes = 10  # mnist classes/labels (0-9)
-        self.batch_size = 128  # Size of each batch
+        self.batch_size = 1024  # Size of each batch
         self.n_epochs = 30
         self.epochs = 20
 

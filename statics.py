@@ -10,6 +10,14 @@ def mnist_input_preprocess(data):
     data /= 255
     return data
 
+def svhn_input_preprocess(data):
+    data = data.reshape(data.shape[0], 32, 32, 3)
+    data = data.astype('float32')
+    data /= 255
+    data = data.mean(axis=-1)  # Convert to grayscale
+    return data
+
+
 
 # calculate change rate (without weights)
 def cacl_change_rate(array):
@@ -117,6 +125,73 @@ def selection(change_rate_li, trend, n):
                 if count == n:
                     return selected
 
+def total_selection_random_uncertainty(final, length, selected_num):
+    selected = np.zeros(length)
+    distance = np.array(final[0])
+    diss = np.array(final[1])
+
+    # 对 distance 进行随机排序
+    distance_indices = np.random.permutation(len(distance))
+
+    selected_indices = []
+    selected_set = set()
+    cnt = 0
+
+    # 然后选择不同 diss 值的元素
+    for idx in distance_indices:
+        if cnt >= selected_num:
+            break
+        if diss[idx] != 0 and diss[idx] not in selected_set:
+            selected_indices.append(idx)
+            selected_set.add(diss[idx])
+            cnt += 1
+
+    # 如果选择的数量不足 selected_num，补充选择剩余的元素
+    if cnt < selected_num:
+        for idx in distance_indices:
+            if idx not in selected_indices:
+                selected_indices.append(idx)
+                cnt += 1
+                if cnt >= selected_num:
+                    break
+
+    selected[selected_indices] = 1
+
+    print('selected:', selected)
+    return selected
+
+
+def total_selection_random_sim(final, length, selected_num):
+    selected = np.zeros(length)
+    distance = np.array(final[0])
+    diss = np.array(final[1])
+
+    # 对 distance 进行升序排列
+    distance_indices = np.argsort(distance)
+
+    selected_indices = []
+    cnt = 0
+
+    # 随机以相同的概率选择元素
+    for idx in distance_indices:
+        if cnt >= selected_num:
+            break
+        if np.random.rand() < 0.5:  # 以相同的概率选择
+            selected_indices.append(idx)
+            cnt += 1
+
+    # 如果选择的数量不足 selected_num，按顺序补充选择剩余的元素
+    if cnt < selected_num:
+        remaining_indices = [i for i in distance_indices if i not in selected_indices]
+        while cnt < selected_num and remaining_indices:
+            idx = remaining_indices.pop(0)  # 按顺序选择
+            selected_indices.append(idx)
+            cnt += 1
+
+    selected[selected_indices] = 1
+
+    print('selected:', selected)
+    return selected
 
 def ran_selection(length, select_num):
     x = np.zeros(length - select_num)
@@ -256,17 +331,6 @@ def calculate_gini(x):
     return 1.0 - ginitmp
 
 
-# 计算加权gini
-def cal_weight_gini(gini_seq):
-    n = len(gini_seq)
-    # sum=0.0
-    # m=0
-    # for i in range(1,n+1):
-    #     sum+=i*i*gini_seq[i-1]
-    #     m+=i*i
-    # return sum/m
-    return gini_seq[n - 1]
-
 
 def cal_distance(x):
     distance = np.sqrt(np.sum(x ** 2))
@@ -293,7 +357,7 @@ def distance_selection(distance, length, selected_num):
     return selected
 
 
-def total_selection(final, length, selected_num):
+def total_selection_sensitive(final, length, selected_num):
     selected = np.zeros(length)
     distance = np.array(final[0])
     diss = np.array(final[1])
@@ -327,17 +391,46 @@ def total_selection(final, length, selected_num):
                 if cnt >= selected_num:
                     break
 
-    # count = 0
-    # for _ in selected_indices:
-    #     selected[_] = 1
-    #     count += 1
-    #     if count == selected_num:
-    #         return selected
-    # for i in distance_indices[:selected_num]:
-    #     selected[i] = 1
     print('selected:', selected)
-    # selected[selected_indices] = 1
     return selected
+
+
+def total_selection(final, length, selected_num):
+    selected = np.zeros(length)
+    distance = np.array(final[0])
+    diss = np.array(final[1])
+
+    # 对 distance 进行升序排列
+    distance_indices = np.argsort(distance)
+
+    selected_indices = []
+    selected_set = set()
+    cnt = 0
+
+    # 然后选择不同 diss 值的元素
+    for idx in distance_indices:
+        if cnt >= selected_num:
+            break
+        if diss[idx] != 0 and diss[idx] not in selected_set:
+            selected_indices.append(idx)
+            selected_set.add(diss[idx])
+            cnt += 1
+
+    # 如果选择的数量不足 selected_num，补充选择剩余的元素
+    if cnt < selected_num:
+        for idx in distance_indices:
+            if idx not in selected_indices:
+                selected_indices.append(idx)
+                cnt += 1
+                if cnt >= selected_num:
+                    break
+
+    selected[selected_indices] = 1
+
+    print('selected:', selected)
+    return selected
+
+
 
 
 def deal_vecseq(vec_seq):
@@ -347,6 +440,7 @@ def deal_vecseq(vec_seq):
     base = np.ones(n)
     maxi = np.zeros(n)
     maxi[0] = 1.0
+    t = 0
     for i in range(len(vec_seq) - 1):
         vec1 = vec_seq[i]
         vec2 = vec_seq[i + 1]
@@ -354,9 +448,10 @@ def deal_vecseq(vec_seq):
         vec2_normalized = vec2 / np.linalg.norm(vec2)  # 归一化第二个向量
         angle = angle_between_vectors(vec1_normalized, vec2_normalized)
         angles.append(np.degrees(angle))  # 将弧度转换为角度制
-        if np.degrees(angle) > np.degrees(angle_between_vectors(base, maxi)):  # 判断是否超过45度
-            count += (i + 1) ** 2  # 使用循环次数 t 的平方加权
-    ratio = count / (len(vec_seq) ** 2)  # 超过45度的次数与总长度之比，使用循环次数 t 的平方加权
+        if np.degrees(angle) > np.degrees(angle_between_vectors(base, maxi)):  # 判断是否超过 tau
+            count += np.exp(i + 1)  # 使用循环次数 t 的平方加权
+        t += np.exp(i + 1)
+    ratio = count / t  # 超过45度的次数与总长度之比，使用循环次数 t 的平方加权
     return ratio
 
 
@@ -368,9 +463,87 @@ def angle_between_vectors(vec1, vec2):
     angle = np.arccos(cos_angle)
     return angle
 
-# if __name__=='__main__':
-#     n=35
-#     base=np.ones(n)
-#     maxi=np.zeros(n)
-#     maxi[0]=1
-#     print(np.degrees(angle_between_vectors(base,maxi)))
+def count_unique_elements(fault_types, selection):
+    selected_faults = [fault_types[i] for i, selected in enumerate(selection) if selected == 1]
+    unique_elements = set()
+
+    for fault in selected_faults:
+        if fault[0] != fault[1]:
+            unique_elements.add(fault)
+
+    return len(unique_elements)
+
+def deal_vecseq_sensitive(vec_seq,tau):
+    angles = []  # 存储夹角序列
+    count = 0  # 超过45度的计数
+    n = len(vec_seq[0])
+    maxi = np.zeros(n)
+    maxi[0] = 1.0
+    t = 0
+    for i in range(len(vec_seq) - 1):
+        vec1 = vec_seq[i]
+        vec2 = vec_seq[i + 1]
+        vec1_normalized = vec1 / np.linalg.norm(vec1)  # 归一化第一个向量
+        vec2_normalized = vec2 / np.linalg.norm(vec2)  # 归一化第二个向量
+        angle = angle_between_vectors(vec1_normalized, vec2_normalized)
+        angles.append(np.degrees(angle))  # 将弧度转换为角度制
+        if np.degrees(angle) > tau:  # 判断是否超过 tau
+            count += np.exp(i + 1)  # 使用循环次数 t 的平方加权
+        t += np.exp(i + 1)
+    ratio = count / t  # 超过45度的次数与总长度之比，使用循环次数 t 的平方加权
+    return ratio
+
+
+from sklearn_extra.cluster import KMedoids
+
+def kmedoids_selection(X, total_num, select_num):
+    """
+    使用 k-medoids 方法选择代表性样本
+
+    参数：
+    X: numpy.ndarray, 特征矩阵
+    total_num: int, 候选集总数
+    select_num: int, 要选的数量
+
+    返回：
+    numpy.ndarray, 选择的索引，选择为1，未选择为0
+    """
+    if len(X.shape) > 2:
+        X = X.reshape((X.shape[0], -1))
+    kmedoids = KMedoids(n_clusters=select_num, random_state=0).fit(X)
+    selected_indices = kmedoids.medoid_indices_
+    selection_array = np.zeros(total_num)
+    selection_array[selected_indices] = 1
+    return selection_array
+
+
+import torch
+
+from MMD.mmd_critic import  select_prototypes, select_criticisms
+from MMD.kernels import rbf_kernel
+
+def mmdcritic_selection(X,total_num, select_num):
+    # 将输入数据展平并转换为 PyTorch 张量
+    X = torch.tensor(X, dtype=torch.float).view(X.shape[0], -1)
+    # 计算 RBF 核矩阵
+    K = rbf_kernel(X)
+    # 选择原型样本
+    prototype_indices = select_prototypes(K, select_num)
+    # 创建长度为 7000 的索引数组
+    selection_array = torch.zeros(total_num, dtype=torch.long)
+    # 将选择的原型样本索引设置为 1
+    selection_array[prototype_indices] = 1
+    return selection_array.numpy()
+
+def calculate_maxp(x):
+    ginitmp = np.max(x)
+    return ginitmp
+
+def maxP_selection(gini, length, selected_num):
+    selected = np.zeros(length)
+    arg_sorted_gini = gini.argsort()[::-1]
+    for i in arg_sorted_gini[:selected_num]:
+        selected[i] = 1
+    return selected
+
+

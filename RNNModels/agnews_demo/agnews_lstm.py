@@ -13,6 +13,8 @@ from keras.callbacks import ModelCheckpoint
 import keras
 import argparse
 
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+
 
 def load_sentence(filename):
     df = pd.read_csv(filename)
@@ -97,8 +99,8 @@ class AGNewsLSTMClassifier:
         self.Y_test = None
         self.n_units = 128  # hidden LSTM units
         self.n_epochs = 10
-        self.epochs = 20
-        self.batch_size = 256  # Size of each batch
+        self.epochs = 30
+        self.batch_size = 2048  # Size of each batch
         self.n_classes = 4
 
     def get_information(self):
@@ -126,12 +128,12 @@ class AGNewsLSTMClassifier:
 
     def train_model(self, save_path):
         self.create_model()
-        checkpoint = ModelCheckpoint(filepath=os.path.join(save_path, "agnews_lstm.h5"),
+        checkpoint = ModelCheckpoint(filepath=os.path.join(save_path, "snips_lstm.h5"),
                                      monitor='val_acc', verbose=1, save_best_only=True, mode='auto')
         self.model.fit(self.X_train, self.Y_train, epochs=self.n_epochs, batch_size=self.batch_size,
                        validation_data=(self.X_test, self.Y_test), callbacks=[checkpoint])
         os.makedirs(save_path, exist_ok=True)
-        self.model.save(os.path.join(save_path, "agnews_lstm.h5"))
+        self.model.save(os.path.join(save_path, "snips_lstm.h5"))
         print(self.model.evaluate(self.X_test, self.Y_test))
 
     def train_model_(self, save_path):

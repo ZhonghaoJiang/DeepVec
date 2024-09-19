@@ -12,7 +12,7 @@ from keras.models import Model
 from keras.callbacks import ModelCheckpoint
 import keras
 import argparse
-
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
 def load_sentence(filename):
     df = pd.read_csv(filename)
@@ -97,8 +97,8 @@ class AgnewsBLSTMClassifier:
         self.Y_test = None
         self.n_units = 128  # hidden LSTM units
         self.n_epochs = 10
-        self.epochs = 20
-        self.batch_size = 256  # Size of each batch
+        self.epochs = 30
+        self.batch_size = 2048  # Size of each batch
         self.n_classes = 4
 
     def get_information(self):
@@ -213,7 +213,7 @@ class AgnewsBLSTMClassifier:
 
 def train_model():
     # step 1. preprocess data
-    data_path = "./data/new_intent.csv"
+    data_path = "./data/agnews.csv"
     save_path = "./save"
     os.makedirs(save_path, exist_ok=True)
     process_data(data_path, save_path)

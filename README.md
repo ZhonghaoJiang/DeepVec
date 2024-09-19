@@ -9,6 +9,7 @@ python=3.7
 ```sh
 pip install -r requirements.txt
 ```
+Please place the SVHN training set and test set under `./data/` and `./RNNModels/svhn_demo/data/`.
 
 ## Preparing an RNN model as the test object
 

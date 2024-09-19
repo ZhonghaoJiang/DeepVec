@@ -15,7 +15,7 @@ import argparse
 intent_dic = {"PlayMusic": 0, "AddToPlaylist": 1, "RateBook": 2, "SearchScreeningEvent": 3,
               "BookRestaurant": 4, "GetWeather": 5, "SearchCreativeWork": 6}
 
-
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 def load_sentence(filename):
     df = pd.read_csv(filename)
     sentences = list(df["text"])
@@ -105,7 +105,7 @@ class SnipsBLSTMClassifier:
         self.n_units = 64  # hidden LSTM units
         self.n_epochs = 10
         self.epochs = 20
-        self.batch_size = 32  # Size of each batch
+        self.batch_size = 2048  # Size of each batch
         self.n_classes = 7
 
     def get_information(self):

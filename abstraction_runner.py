@@ -6,6 +6,7 @@ import argparse
 import sys
 sys.path.append("")
 
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
 def get_abst_model(profile_save_path, abst_save_path, name_prefix, lstm_classifier, model):
     comp_num = 64  # 64
@@ -41,6 +42,17 @@ def mnist_lstm_abst():
     abst_save_path = "./RNNModels/mnist_demo/output/lstm/abst_model"
     name_prefix = "lstm_mnist"
     lstm_classifier = MnistLSTMClassifier()
+    model = lstm_classifier.load_hidden_state_model(dl_model)
+    get_abst_model(profile_save_path, abst_save_path, name_prefix, lstm_classifier, model)
+
+
+def mnist_gru_abst():
+    from RNNModels.mnist_demo.mnist_gru import MnistGRUClassifier
+    dl_model = "./RNNModels/mnist_demo/models/mnist_gru.h5"
+    profile_save_path = "./RNNModels/mnist_demo/output/gru/profile_save"
+    abst_save_path = "./RNNModels/mnist_demo/output/gru/abst_model"
+    name_prefix = "gru_mnist"
+    lstm_classifier = MnistGRUClassifier()
     model = lstm_classifier.load_hidden_state_model(dl_model)
     get_abst_model(profile_save_path, abst_save_path, name_prefix, lstm_classifier, model)
 
@@ -82,6 +94,19 @@ def snips_gru_abst():
     get_abst_model(profile_save_path, abst_save_path, name_prefix, lstm_classifier, model)
 
 
+def snips_lstm_abst():
+    from RNNModels.snips_demo.snips_lstm import SnipsLSTMClassifier
+    dl_model = "./RNNModels/snips_demo/models/snips_lstm.h5"
+    profile_save_path = "./RNNModels/snips_demo/output/lstm/profile_save"
+    abst_save_path = "./RNNModels/snips_demo/output/lstm/abst_model"
+    name_prefix = "lstm_snips"
+    lstm_classifier = SnipsLSTMClassifier()
+    lstm_classifier.embedding_path = "./RNNModels/snips_demo/save/embedding_matrix.npy"
+    lstm_classifier.data_path = "./RNNModels/snips_demo/save/standard_data.npz"
+    model = lstm_classifier.load_hidden_state_model(dl_model)
+    get_abst_model(profile_save_path, abst_save_path, name_prefix, lstm_classifier, model)
+
+
 def fashion_lstm_abst():
     from RNNModels.fashion_demo.fashion_lstm import FashionLSTMClassifier
     dl_model = "./RNNModels/fashion_demo/models/fashion_lstm.h5"
@@ -104,9 +129,20 @@ def fashion_gru_abst():
     get_abst_model(profile_save_path, abst_save_path, name_prefix, lstm_classifier, model)
 
 
+def fashion_blstm_abst():
+    from RNNModels.fashion_demo.fashion_blstm import FashionBLSTMClassifier
+    dl_model = "./RNNModels/fashion_demo/models/fashion_blstm.h5"
+    profile_save_path = "./RNNModels/fashion_demo/output/blstm/profile_save"
+    abst_save_path = "./RNNModels/fashion_demo/output/blstm/abst_model"
+    name_prefix = "blstm_fashion"
+    lstm_classifier = FashionBLSTMClassifier()
+    model = lstm_classifier.load_hidden_state_model(dl_model)
+    get_abst_model(profile_save_path, abst_save_path, name_prefix, lstm_classifier, model)
+
+
 def agnews_lstm_abst():
     from RNNModels.agnews_demo.agnews_lstm import AGNewsLSTMClassifier
-    dl_model = "./RNNModels/agnews_demo/models/agnews_lstm.h5"
+    dl_model = "./RNNModels/agnews_demo/models/snips_lstm.h5"
     profile_save_path = "./RNNModels/agnews_demo/output/lstm/profile_save"
     abst_save_path = "./RNNModels/agnews_demo/output/lstm/abst_model"
     name_prefix = "lstm_agnews"
@@ -130,28 +166,87 @@ def agnews_blstm_abst():
     get_abst_model(profile_save_path, abst_save_path, name_prefix, lstm_classifier, model)
 
 
+def agnews_gru_abst():
+    from RNNModels.agnews_demo.agnews_gru import AgnewsGRUClassifier
+    dl_model = "./RNNModels/agnews_demo/models/agnews_gru.h5"
+    profile_save_path = "./RNNModels/agnews_demo/output/gru/profile_save"
+    abst_save_path = "./RNNModels/agnews_demo/output/gru/abst_model"
+    name_prefix = "gru_agnews"
+    lstm_classifier = AgnewsGRUClassifier()
+    lstm_classifier.embedding_path = "./RNNModels/agnews_demo/save/embedding_matrix.npy"
+    lstm_classifier.data_path = "./RNNModels/agnews_demo/save/standard_data.npz"
+    model = lstm_classifier.load_hidden_state_model(dl_model)
+    get_abst_model(profile_save_path, abst_save_path, name_prefix, lstm_classifier, model)
+
+def svhn_lstm_abst():
+    from RNNModels.svhn_demo.svhn_lstm import SvhnLSTMClassifier
+    dl_model = "./RNNModels/svhn_demo/models/svhn_lstm.h5"
+    profile_save_path = "./RNNModels/svhn_demo/output/lstm/profile_save"
+    abst_save_path = "./RNNModels/svhn_demo/output/lstm/abst_model"
+    name_prefix = "lstm_svhn"
+    lstm_classifier = SvhnLSTMClassifier()
+    model = lstm_classifier.load_hidden_state_model(dl_model)
+    get_abst_model(profile_save_path, abst_save_path, name_prefix, lstm_classifier, model)
+
+def svhn_gru_abst():
+    from RNNModels.svhn_demo.svhn_gru import SvhnGRUClassifier
+    dl_model = "./RNNModels/svhn_demo/models/svhn_gru.h5"
+    profile_save_path = "./RNNModels/svhn_demo/output/gru/profile_save"
+    abst_save_path = "./RNNModels/svhn_demo/output/gru/abst_model"
+    name_prefix = "gru_svhn"
+    lstm_classifier = SvhnGRUClassifier()
+    model = lstm_classifier.load_hidden_state_model(dl_model)
+    get_abst_model(profile_save_path, abst_save_path, name_prefix, lstm_classifier, model)
+
+def svhn_blstm_abst():
+    from RNNModels.svhn_demo.svhn_blstm import SvhnBLSTMClassifier
+    dl_model = "./RNNModels/svhn_demo/models/svhn_blstm.h5"
+    profile_save_path = "./RNNModels/svhn_demo/output/blstm/profile_save"
+    abst_save_path = "./RNNModels/svhn_demo/output/blstm/abst_model"
+    name_prefix = "blstm_svhn"
+    lstm_classifier = SvhnBLSTMClassifier()
+    model = lstm_classifier.load_hidden_state_model(dl_model)
+    get_abst_model(profile_save_path, abst_save_path, name_prefix, lstm_classifier, model)
+
+
 if __name__ == '__main__':
     parse = argparse.ArgumentParser(
         "Generate the abstract model for DeepStellar-cov.")
-    parse.add_argument('-test_obj', required=True, choices=['mnist_lstm', 'mnist_blstm',
-                                                            'snips_blstm', 'snips_gru',
-                                                            'fashion_lstm', 'fashion_gru',
-                                                            'agnews_lstm', 'agnews_blstm'])
+    parse.add_argument('-test_obj', required=True, choices=['mnist_lstm', 'mnist_blstm', 'mnist_gru',
+                                                            'snips_blstm', 'snips_gru', 'snips_lstm',
+                                                            'fashion_lstm', 'fashion_gru', 'fashion_blstm',
+                                                            'agnews_lstm', 'agnews_blstm', 'agnews_gru',
+                                                            'svhn_lstm', 'svhn_blstm', 'svhn_gru'])
     args = parse.parse_args()
 
     if args.test_obj == "mnist_lstm":
         mnist_lstm_abst()
     if args.test_obj == "mnist_blstm":
         mnist_blstm_abst()
+    if args.test_obj == "mnist_gru":
+        mnist_gru_abst()
     if args.test_obj == "snips_blstm":
         snips_blstm_abst()
     if args.test_obj == "snips_gru":
         snips_gru_abst()
+    if args.test_obj == "snips_lstm":
+        snips_lstm_abst()
     if args.test_obj == "fashion_lstm":
         fashion_lstm_abst()
     if args.test_obj == "fashion_gru":
         fashion_gru_abst()
+    if args.test_obj == "fashion_blstm":
+        fashion_blstm_abst()
     if args.test_obj == "agnews_lstm":
         agnews_lstm_abst()
     if args.test_obj == "agnews_blstm":
         agnews_blstm_abst()
+    if args.test_obj == "agnews_gru":
+        agnews_gru_abst()
+    if args.test_obj == "svhn_lstm":
+        svhn_lstm_abst()
+    if args.test_obj == "svhn_blstm":
+        svhn_blstm_abst()
+    if args.test_obj == "svhn_gru":
+        svhn_gru_abst()
+

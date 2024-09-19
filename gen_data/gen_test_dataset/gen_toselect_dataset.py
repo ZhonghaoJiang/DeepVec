@@ -24,12 +24,18 @@ def gen_mnist():
     for times in range(30):  # 30 different samples
         x_to_select_mnist = []
         y_to_select_mnist = []
+        to_select_x_ori, to_select_y_ori = [], []
+        to_select_x_aug, to_select_y_aug = [], []
         select_id = np.random.choice(a=li, size=3000, replace=False)
         print(select_id)
 
         for i in select_id:
             d1 = x_test_data[i].reshape(1, 28, 28)
             d2 = ori_x_test_data[i].reshape(1, 28, 28)
+            to_select_x_ori.append(d1)
+            to_select_x_aug.append(d2)
+            to_select_y_ori.append(ori_y_test_data[i])
+            to_select_y_aug.append(y_test_data[i])
             x_to_select_mnist.append(d1)
             y_to_select_mnist.append(y_test_data[i])
             x_to_select_mnist.append(d2)
@@ -37,12 +43,15 @@ def gen_mnist():
 
         x_save_data = np.array(x_to_select_mnist)
         y_save_data = np.array(y_to_select_mnist)
+
         state = np.random.get_state()
         np.random.shuffle(x_save_data)
         np.random.set_state(state)
         np.random.shuffle(y_save_data)
 
         np.savez(("../../gen_data/mnist_toselect/mnist_toselect" + "_{}").format(times), X=x_save_data, Y=y_save_data)
+        np.savez(("../../gen_data/mnist_toselect/mnist_toselect" + "_ori"), X=np.array(to_select_x_ori), Y=np.array(to_select_y_ori))
+        np.savez(("../../gen_data/mnist_toselect/mnist_toselect" + "_aug"), X=np.array(to_select_x_aug), Y=np.array(to_select_y_aug))
 
 
 def gen_snips():
@@ -73,6 +82,8 @@ def gen_snips():
 
         to_select.sample(frac=1)  # shuffle
         to_select.to_csv(("../../gen_data/snips_toselect/snips_toselect" + "_{}" + ".csv").format(times))
+        ori.to_csv("../../gen_data/snips_toselect/snips_toselect" + "_ori" + ".csv", index=False)
+        aug.to_csv("../../gen_data/snips_toselect/snips_toselect" + "_aug" + ".csv", index=False)
 
 
 def gen_fashion():
@@ -93,12 +104,18 @@ def gen_fashion():
     for times in range(30):
         x_to_select_mnist = []
         y_to_select_mnist = []
+        to_select_x_ori, to_select_y_ori = [], []
+        to_select_x_aug, to_select_y_aug = [], []
         select_id = np.random.choice(a=li, size=3000, replace=False)
         print(select_id)
 
         for i in select_id:
             d1 = x_test_data[i].reshape(1, 28, 28)
             d2 = ori_x_test_data[i].reshape(1, 28, 28)
+            to_select_x_ori.append(d1)
+            to_select_x_aug.append(d2)
+            to_select_y_ori.append(ori_y_test_data[i])
+            to_select_y_aug.append(y_test_data[i])
             x_to_select_mnist.append(d1)
             y_to_select_mnist.append(y_test_data[i])
             x_to_select_mnist.append(d2)
@@ -112,6 +129,53 @@ def gen_fashion():
         np.random.shuffle(y_save_data)
 
         np.savez(("../../gen_data/fashion_toselect/fashion_toselect" + "_{}").format(times), X=x_save_data, Y=y_save_data)
+        np.savez(("../../gen_data/fashion_toselect/fashion_toselect" + "_ori"), X=np.array(to_select_x_ori), Y=np.array(to_select_y_ori))
+        np.savez(("../../gen_data/fashion_toselect/fashion_toselect" + "_aug"), X=np.array(to_select_x_aug), Y=np.array(to_select_y_aug))
+
+def gen_svhn():
+    x_test_data_path = "./dau/svhn_harder/x_test_0.npy"
+    y_test_data_path = "./dau/svhn_harder/y_test_0.npy"
+    ori_x_test_data_path = "./dau/svhn_harder/x_ori_test_0.npy"
+    ori_y_test_data_path = "./dau/svhn_harder/y_ori_test_0.npy"
+
+    x_test_data = np.load(x_test_data_path)
+    y_test_data = np.load(y_test_data_path)
+    ori_x_test_data = np.load(ori_x_test_data_path)
+    ori_y_test_data = np.load(ori_y_test_data_path)
+
+    os.makedirs("../../gen_data/svhn_toselect", exist_ok=True)
+
+    li = np.arange(len(x_test_data))
+    for times in range(30):  # 30 different samples
+        x_to_select_svhn = []
+        y_to_select_svhn = []
+        to_select_x_ori, to_select_y_ori = [], []
+        to_select_x_aug, to_select_y_aug = [], []
+        select_id = np.random.choice(a=li, size=3500, replace=False)
+        print(select_id)
+
+        for i in select_id:
+            d1 = x_test_data[i].reshape(1, 32, 32, 3)
+            d2 = ori_x_test_data[i].reshape(1, 32, 32, 3)
+            to_select_x_ori.append(d1)
+            to_select_x_aug.append(d2)
+            to_select_y_ori.append(ori_y_test_data[i])
+            to_select_y_aug.append(y_test_data[i])
+            x_to_select_svhn.append(d1)
+            y_to_select_svhn.append(y_test_data[i])
+            x_to_select_svhn.append(d2)
+            y_to_select_svhn.append(ori_y_test_data[i])
+
+        x_save_data = np.array(x_to_select_svhn)
+        y_save_data = np.array(y_to_select_svhn)
+        state = np.random.get_state()
+        np.random.shuffle(x_save_data)
+        np.random.set_state(state)
+        np.random.shuffle(y_save_data)
+
+        np.savez(("../../gen_data/svhn_toselect/svhn_toselect" + "_{}").format(times), X=x_save_data, Y=y_save_data)
+        np.savez(("../../gen_data/svhn_toselect/svhn_toselect" + "_ori"), X=np.array(to_select_x_ori), Y=np.array(to_select_y_ori))
+        np.savez(("../../gen_data/svhn_toselect/svhn_toselect" + "_aug"), X=np.array(to_select_x_aug), Y=np.array(to_select_y_aug))
 
 
 def gen_agnews():
@@ -142,11 +206,13 @@ def gen_agnews():
 
         to_select.sample(frac=1)  # shuffle
         to_select.to_csv(("../../gen_data/agnews_toselect/agnews_toselect" + "_{}" + ".csv").format(times))
+        ori.to_csv("../../gen_data/agnews_toselect/agnews_toselect" + "_ori" + ".csv", index=False)
+        aug.to_csv("../../gen_data/agnews_toselect/agnews_toselect" + "_aug" + ".csv", index=False)
 
 
 if __name__ == '__main__':
     parse = argparse.ArgumentParser("Generate the dataset for selection.")
-    parse.add_argument('-dataset', required=True, choices=['mnist', 'snips', 'fashion', 'agnews'])
+    parse.add_argument('-dataset', required=True, choices=['mnist', 'snips', 'fashion', 'agnews', 'svhn'])
     args = parse.parse_args()
 
     if args.dataset == "mnist":
@@ -160,3 +226,6 @@ if __name__ == '__main__':
 
     if args.dataset == "agnews":
         gen_agnews()
+
+    if args.dataset == "svhn":
+        gen_svhn()

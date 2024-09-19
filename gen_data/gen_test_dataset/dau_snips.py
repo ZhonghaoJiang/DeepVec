@@ -9,7 +9,7 @@ import nlpaug.flow as nafc
 from nlpaug.util import Action
 import csv
 import os
-
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 # from nlpaug.util.file.download import DownloadUtil
 # DownloadUtil.download_word2vec(dest_dir='./nlp_model/')  # Download word2vec model
 # DownloadUtil.download_glove(model_name='glove.6B', dest_dir='./nlp_model/')  # Download GloVe model
@@ -32,9 +32,9 @@ def replace_word2vec(text):
 
 def back_translate(text):
     back_translation_aug = naw.BackTranslationAug(
-        # from_model_name='transformer.wmt19.en-de',
-        # to_model_name='transformer.wmt19.de-en',
-        device='cuda'
+        from_model_name='transformer.wmt19.en-de',
+        to_model_name='transformer.wmt19.de-en',
+        device='cpu'
     )
     augmented_text = back_translation_aug.augment(text)
     return augmented_text

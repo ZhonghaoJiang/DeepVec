@@ -105,8 +105,8 @@ class SnipsGRUClassifier:
         self.X_test = None
         self.Y_test = None
         self.n_units = 64  # hidden LSTM units
-        self.n_epochs = 10
-        self.batch_size = 64  # Size of each batch
+        self.n_epochs = 20
+        self.batch_size = 2048  # Size of each batch
         self.n_classes = 7
 
     def get_information(self):
