@@ -97,6 +97,8 @@ bash RQ1_run.sh
 
 The results will be saved in `./exp_results/rq1` .
 
+![RQ1](./assets/rq1.png)
+
 ## RQ2: Inclusiveness
 
 ```sh
@@ -109,7 +111,7 @@ If you need to evaluate the inclusiveness on the original test set and the augme
 ```sh
 bash RQ2_seperate.sh
 ```
-
+![RQ2](./assets/rq2.png)
 
 ## RQ3: Fault Diversity
 
@@ -118,6 +120,8 @@ bash RQ3_run.sh
 ```
 
 The results will be saved in `./exp_results/rq3` .
+
+![RQ3](./assets/rq3.png)
 
 ## RQ4: Guidance
 
@@ -135,6 +139,8 @@ bash RQ4_100_run.sh
 
 The results will be saved in `./exp_results/rq4` .
 
+![RQ4](./assets/rq4.png)
+
 ## RQ5: Time Cost
 
 ```sh
@@ -143,12 +149,16 @@ bash RQ5_run.sh
 
 The results will be saved in `./exp_results/rq5` .
 
+![RQ5](./assets/rq5.png)
+
 ## RQ6: Ablation Study
 ```sh
 bash ablation.sh
 ```
 
 The results will be saved in `./exp_results/ablation` .
+
+![RQ6](./assets/rq6.png)
 
 ## RQ7: Sensitive Analysis
 
@@ -157,3 +167,5 @@ bash Sensitive.sh
 ```
 
 The results will be saved in `./exp_results/sensitive` .
+
+![RQ6](./assets/rq7.png)
