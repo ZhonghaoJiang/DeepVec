@@ -83,6 +83,71 @@ def process_data(data_path, save_path):
     # return (X_train, Y_train), (X_test, Y_test), embedding_matrix
 
 
+def load_aug_sentence(train_file,test_file):
+    df1 = pd.read_csv(train_file)
+    df2 = pd.read_csv(test_file)
+    df = pd.concat([df1, df2])
+    sentences = list(df["text"])
+    words = []
+    for s in sentences:
+        clean = re.sub(r'[^ a-z A-Z 0-9]', " ", str(s))
+        w = word_tokenize(clean)
+        # stemming
+        words.append([i.lower() for i in w])
+    return words
+
+def process_aug_data(train_data_path, test_data_path, save_path):
+    standard_data_save_path = os.path.join(save_path, "standard_data")
+    embedding_matrix_save_path = os.path.join(save_path, "embedding_matrix")
+    w2v_model_save_path = os.path.join(save_path, "w2v_model")
+    words = load_aug_sentence(train_data_path, test_data_path)
+
+    w2v_model = Word2Vec(sentences=words, size=256, min_count=1, window=5, workers=4)
+    embedding_matrix = w2v_model.wv.vectors
+    np.save(embedding_matrix_save_path, embedding_matrix)
+
+    # Get all words
+    vocab_list = list(w2v_model.wv.vocab.keys())
+    # Index corresponding to each word
+    word_index = {word: index for index, word in enumerate(vocab_list)}
+
+    # Serialization
+    def get_index(sentence):
+        sequence = []
+        for word in sentence:
+            try:
+                sequence.append(word_index[word])
+            except KeyError:
+                pass
+        return sequence
+
+    X_data = list(map(get_index, words))
+
+    maxlen = 16
+    X_pad = pad_sequences(X_data, maxlen=maxlen)
+
+    # Get the labels
+    df1 = pd.read_csv(train_data_path)
+    df2 = pd.read_csv(test_data_path)
+    df = pd.concat([df1, df2])
+    intent_ = df["intent"]
+    intent = [intent_dic[i] for i in intent_]
+    Y = keras.utils.to_categorical(intent, num_classes=7)
+
+    # Split dataset
+    X_train = X_pad[:len(df1)]  # 0:999(to select) 999:9990(train) 9990:12488(test)
+    X_test = X_pad[len(df1):]
+    Y_train = Y[:len(df1)]
+    Y_test = Y[len(df1):]
+
+    # These should be stored in npz to avoid regenerating each time it is executed
+    embedding_matrix = w2v_model.wv.vectors
+
+    # These should be stored in npz to avoid regenerating each time it is executed
+    np.savez(standard_data_save_path, X_train=X_train, Y_train=Y_train, X_test=X_test, Y_test=Y_test)
+    np.save(embedding_matrix_save_path, embedding_matrix)
+    w2v_model.save(w2v_model_save_path)
+
 def load_data(path):
     with np.load(path, allow_pickle=True) as f:
         x_train, y_train = f['X_train'], f['Y_train']
@@ -162,6 +227,19 @@ class SnipsGRUClassifier:
                        batch_size=self.batch_size, callbacks=[checkpoint])
 
         self.model.save(save_path)
+
+    def dau_train(self, save_path):
+        self.create_model()
+
+        checkpoint = ModelCheckpoint(filepath=os.path.join(save_path, "snips_gru_aug.h5"),
+                                     monitor='val_acc', verbose=1, save_best_only=True, mode='auto')
+        self.model.fit(self.X_train, self.Y_train, epochs=self.n_epochs, batch_size=self.batch_size,
+                       validation_data=(self.X_test, self.Y_test), callbacks=[checkpoint])
+        os.makedirs(save_path, exist_ok=True)
+        self.model.save(os.path.join(save_path, "snips_gru_aug.h5"))
+        acc = self.model.evaluate(self.X_test, self.Y_test)[1]
+        print("dau acc:", acc)
+        return acc
 
     def evaluate_retrain(self, retrain_model_path, ori_model_path, x_val, y_val):
         retrain_model = load_model(retrain_model_path)
@@ -247,13 +325,26 @@ def train_model_ori():
     classifier.get_information()
     classifier.train_model_("./models")
 
+def train_model_dau():
+    save_path = "./save"
+    base_path = "../../gen_data/gen_train_dau/dau/snips_harder/"
+    process_aug_data(f"{base_path}snips_train_aug.csv", f"{base_path}snips_test_aug.csv", save_path)
+
+    classifier = SnipsGRUClassifier()
+    classifier.embedding_path = "./save/embedding_matrix.npy"
+    classifier.data_path = "./save/standard_data.npz"
+    classifier.get_information()
+    classifier.dau_train("./models")
+
 
 if __name__ == "__main__":
     parse = argparse.ArgumentParser("Train the GRU model on Snips dataset.")
-    parse.add_argument('-type', required=True, choices=['train', 'retrain'])
+    parse.add_argument('-type', required=True, choices=['train', 'retrain', 'dau_train'])
     args = parse.parse_args()
 
     if args.type == "train":
         train_model()
     elif args.type == "retrain":
         train_model_ori()
+    elif args.type == "dau_train":
+        train_model_dau()

@@ -96,6 +96,38 @@ class FashionLSTMClassifier:
         os.makedirs(save_path, exist_ok=True)
         self.model.save(os.path.join(save_path, "fashion_lstm_ori.h5"))
 
+    def dau_train(self, save_path, x_dau_train, x_dau_test, y_dau_train, y_dau_test):
+        self.create_model()
+        (x_train, y_train), (x_test, y_test) = fashion_mnist.load_data()
+        x_dau_train = np.load(x_dau_train)
+        x_dau_test = np.load(x_dau_test)
+        y_dau_train = np.load(y_dau_train)
+        y_dau_test = np.load(y_dau_test)
+
+        x_train = np.concatenate([x_dau_train, x_train[:-6000]])
+        y_train = np.concatenate([y_dau_train, y_train[:-6000]])
+
+        x_train = self.input_preprocess(x_train)
+        x_test = self.input_preprocess(x_test)
+
+        y_test = keras.utils.to_categorical(y_test, num_classes=10)
+        y_train = keras.utils.to_categorical(y_train, num_classes=10)
+
+        checkpoint = ModelCheckpoint(filepath=os.path.join(save_path, "fashion_lstm_dau.h5"), monitor='val_acc',
+                                     mode='auto',
+                                     save_best_only=True)
+        self.model.fit(x_train, y_train, validation_data=(x_test, y_test),
+                       batch_size=self.batch_size, epochs=self.n_epochs, shuffle=False, callbacks=[checkpoint])
+
+        os.makedirs(save_path, exist_ok=True)
+        self.model.save(os.path.join(save_path, "fashion_lstm_dau.h5"))
+
+        x_val = self.input_preprocess(x_dau_test)
+        y_val = keras.utils.to_categorical(y_dau_test, num_classes=10)
+        acc = self.model.evaluate(x_val, y_val)[1]
+        print("dau acc:", acc)
+        return acc
+
     def retrain(self, X_selected, Y_selected, X_val, Y_val, save_path):
         self.create_model()
         (x_train, y_train), (x_test, y_test) = fashion_mnist.load_data()
@@ -161,13 +193,24 @@ def train_model_ori():
     lstm_classifier.create_model()
     lstm_classifier.train_(save_path)
 
+def train_model_dau():
+    save_path = "./models"
+    lstm_classifier = FashionLSTMClassifier()
+    # train an rnn model
+    lstm_classifier.create_model()
+    base_path = "../../gen_data/gen_train_dau/dau/fashion_harder/"
+    lstm_classifier.dau_train(save_path, f"{base_path}x_train_aug.npy", f"{base_path}x_test_aug.npy",
+                              f"{base_path}y_train_aug.npy", f"{base_path}y_test_aug.npy")
+
 
 if __name__ == "__main__":
     parse = argparse.ArgumentParser("Train the LSTM model on Fashion dataset.")
-    parse.add_argument('-type', required=True, choices=['train', 'retrain'])
+    parse.add_argument('-type', required=True, choices=['train', 'retrain', 'dau_train'])
     args = parse.parse_args()
 
     if args.type == "train":
         train_model()
     elif args.type == "retrain":
         train_model_ori()
+    elif args.type == "dau_train":
+        train_model_dau()

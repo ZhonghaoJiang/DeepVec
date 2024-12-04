@@ -18,7 +18,13 @@ sess = tf.compat.v1.Session(config=config)
 K.set_session(sess)
 
 # RQ4: Retrain the RNNs with selected data
-def main(args, run_time):
+if __name__ == '__main__':
+    parse = argparse.ArgumentParser("Calculate the inclusiveness for the selected dataset.")
+    parse.add_argument('-dl_model', help='path of dl model', required=True)
+    parse.add_argument('-model_type', required=True, choices=['lstm', 'blstm', 'gru'])
+    parse.add_argument('-dataset', required=True, choices=['mnist', 'snips', 'fashion', 'agnews', 'svhn'])
+    args = parse.parse_args()
+
     if args.model_type == "lstm" and args.dataset == "mnist":
         time_steps = 28
         w2v_path = ""
@@ -351,7 +357,7 @@ def main(args, run_time):
             X_selected_array, Y_selected_array = get_selected_data(to_select_path, np.array(eval(method_item)),
                                                                    w2v_path)
             print("len(X_selected_array):", len(X_selected_array))
-            retrained_model_path = retrain_save_path + str(pre) + "/" + str(method_item) + "_" + str(run_time) + "_" + \
+            retrained_model_path = retrain_save_path + str(pre) + "/" + str(method_item) + "_" + \
                                    str(args.dataset) + "_" + str(args.model_type) + ".h5"
             if not os.path.isfile(retrained_model_path):  # Has not been saved, needs to be trained
                 os.makedirs(retrain_save_path + str(pre), exist_ok=True)
@@ -377,7 +383,6 @@ def main(args, run_time):
             print("{}_{}: ".format("aug_acc_imp", method_item), round(aug_imp_tmp * 100, 2))
             print("{}_{}: ".format("mix_acc_imp", method_item), round(mix_imp_tmp * 100, 2))
 
-
     # ======== final result ========
     result_dict = {}
     result_dict['select rate'] = pre_li
@@ -388,15 +393,6 @@ def main(args, run_time):
 
     print(result_dict)
     df = pd.DataFrame(result_dict)
-    df.to_csv("./exp_results/rq4-muti/rq4_{}_{}_{}.csv".format(args.dataset, args.model_type, run_time))
+    df.to_csv("./exp_results/rq4+/rq4_{}_{}.csv".format(args.dataset, args.model_type))
 
-    print("Finished! The results are saved in: [./exp_results/rq4-muti/rq4_{}_{}_{}.csv]".format(args.dataset, args.model_type, run_time))
-
-if __name__ == '__main__':
-    parse = argparse.ArgumentParser("Calculate the inclusiveness for the selected dataset.")
-    parse.add_argument('-dl_model', help='path of dl model', required=True)
-    parse.add_argument('-model_type', required=True, choices=['lstm', 'blstm', 'gru'])
-    parse.add_argument('-dataset', required=True, choices=['mnist', 'snips', 'fashion', 'agnews', 'svhn'])
-    args = parse.parse_args()
-    for run_time in range(1, 11):
-        main(args, run_time)
+    print("Finished! The results are saved in: [./exp_results/rq4+/rq4_{}_{}.csv]".format(args.dataset, args.model_type))
