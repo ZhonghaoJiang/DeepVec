@@ -10,7 +10,6 @@ from keras.models import Model
 from keras.models import Sequential
 from keras.models import load_model
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 
 class MnistLSTMClassifier:
@@ -140,6 +139,34 @@ class MnistLSTMClassifier:
         self.model.fit(Xa_train, Ya_train, validation_data=(X_val, Y_val),
                        batch_size=self.batch_size, epochs=self.n_epochs, shuffle=False, callbacks=[checkpoint])
 
+        self.model.save(save_path)
+
+    def dau_retrain(self, ori_model_path, X_selected, Y_selected, X_val, Y_val, save_path):
+        self.create_model()
+        (x_train, y_train), (x_test, y_test) = mnist.load_data()
+        base_path = "./gen_data/gen_train_dau/dau/mnist_harder/"
+        x_dau_train = np.load(f"{base_path}x_train_aug.npy")
+        y_dau_train = np.load(f"{base_path}y_train_aug.npy")
+
+        x_train = np.concatenate([x_dau_train, x_train[:-6000]])
+        y_train = np.concatenate([y_dau_train, y_train[:-6000]])
+
+        Xa_train = np.concatenate([x_train, X_selected])
+        Ya_train = np.concatenate([y_train, Y_selected])
+
+        Xa_train = self.input_preprocess(Xa_train)
+        X_val = self.input_preprocess(X_val)
+        Ya_train = keras.utils.to_categorical(Ya_train, num_classes=10)
+        Y_val = keras.utils.to_categorical(Y_val, num_classes=10)
+
+        # 创建 checkpoint 回调函数
+        checkpoint = ModelCheckpoint(filepath=save_path, monitor='val_acc', mode='auto', save_best_only=True)
+
+        # 继续训练模型
+        self.model.fit(Xa_train, Ya_train, validation_data=(X_val, Y_val),
+                       batch_size=self.batch_size, epochs=self.n_epochs, shuffle=False, callbacks=[checkpoint])
+
+        # 保存训练好的模型
         self.model.save(save_path)
 
     def evaluate_retrain(self, retrain_model_path, ori_model_path, x_val, y_val):

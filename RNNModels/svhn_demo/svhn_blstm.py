@@ -6,7 +6,7 @@ from keras.callbacks import ModelCheckpoint
 import numpy as np
 from scipy.io import loadmat
 import argparse
-os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+
 
 
 class SvhnBLSTMClassifier:
@@ -98,7 +98,7 @@ class SvhnBLSTMClassifier:
                        batch_size=self.batch_size, epochs=self.n_epochs, shuffle=False, callbacks=[checkpoint])
 
         os.makedirs(save_path, exist_ok=True)
-        self.model.save(os.path.join(save_path, "svhn_lstm_bdau.h5"))
+        self.model.save(os.path.join(save_path, "svhn_blstm_dau.h5"))
 
         x_val = self.input_preprocess(x_dau_test)
         y_val = keras.utils.to_categorical(y_dau_test, num_classes=10)
@@ -125,6 +125,33 @@ class SvhnBLSTMClassifier:
 
         self.model.save(save_path)
 
+    def dau_retrain(self, ori_model_path, X_selected, Y_selected, X_val, Y_val, save_path):
+        self.create_model()
+        x_train, y_train, x_test, y_test = self.load_svhn_data()
+        base_path = "./gen_data/gen_train_dau/dau/svhn_harder/"
+        x_dau_train = np.load(f"{base_path}x_train_aug.npy")
+        y_dau_train = np.load(f"{base_path}y_train_aug.npy")
+
+        x_train = np.concatenate([x_dau_train, x_train[:-7000]])
+        y_train = np.concatenate([y_dau_train, y_train[:-7000]])
+
+        Xa_train = np.concatenate([x_train, X_selected])
+        Ya_train = np.concatenate([y_train, Y_selected])
+
+        Xa_train = self.input_preprocess(Xa_train)
+        X_val = self.input_preprocess(X_val)
+        Ya_train = keras.utils.to_categorical(Ya_train, num_classes=10)
+        Y_val = keras.utils.to_categorical(Y_val, num_classes=10)
+
+        # 创建 checkpoint 回调函数
+        checkpoint = ModelCheckpoint(filepath=save_path, monitor='val_acc', mode='auto', save_best_only=True)
+
+        # 继续训练模型
+        self.model.fit(Xa_train, Ya_train, validation_data=(X_val, Y_val),
+                       batch_size=self.batch_size, epochs=self.n_epochs, shuffle=False, callbacks=[checkpoint])
+
+        # 保存训练好的模型
+        self.model.save(save_path)
     def evaluate_retrain(self, retrain_model_path, ori_model_path, x_val, y_val):
         x_val = self.input_preprocess(x_val)
         y_val = keras.utils.to_categorical(y_val, num_classes=10)

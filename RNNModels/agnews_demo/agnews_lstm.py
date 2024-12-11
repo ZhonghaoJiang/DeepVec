@@ -218,6 +218,17 @@ class AGNewsLSTMClassifier:
 
         self.model.save(save_path)
 
+    def dau_retrain(self, ori_model_path, X_selected, Y_selected, X_val, Y_val, save_path):
+        self.create_model()
+        Xa_train = np.concatenate([X_selected, self.X_train])
+        Ya_train = np.concatenate([Y_selected, self.Y_train])
+
+        checkpoint = ModelCheckpoint(filepath=save_path, monitor='val_acc', verbose=1, save_best_only=True, mode='auto')
+        self.model.fit(Xa_train, Ya_train, validation_data=(X_val, Y_val), epochs=self.n_epochs,
+                       batch_size=self.batch_size, shuffle=False, callbacks=[checkpoint])
+
+        self.model.save(save_path)
+
     def dau_train(self, save_path):
         self.create_model()
 
@@ -316,13 +327,13 @@ def train_model_ori():
     classifier.train_model_("./models")
 
 def train_model_dau():
-    save_path = "./save"
+    save_path = "./save_aug"
     base_path = "../../gen_data/gen_train_dau/dau/agnews_harder/"
     process_aug_data(f"{base_path}agnews_train_aug.csv", f"{base_path}agnews_test_aug.csv", save_path)
 
     classifier = AGNewsLSTMClassifier()
-    classifier.embedding_path = "./save/embedding_matrix.npy"
-    classifier.data_path = "./save/standard_data.npz"
+    classifier.embedding_path = "./save_aug/embedding_matrix.npy"
+    classifier.data_path = "./save_aug/standard_data.npz"
     classifier.get_information()
     classifier.dau_train("./models")
 
