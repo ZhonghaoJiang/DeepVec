@@ -319,6 +319,79 @@ def get_selection_information_new(file_path, model, lstm_classifier, dense_model
     return feature_mat, weight_state, unique_index_arr_id, np.array(stellar_bscov), np.array(stellar_btcov), np.array(rnntest_sc), \
            np.array(nc_cov), np.array(nc_cam), np.array(rnntest_sc_cam), final, trend_set, right, fault_types, deepgini_set, maxp_set
 
+def deepvec_selection_information(file_path, model, lstm_classifier, dense_model, wrapper_path, w2v_path, time_steps):
+    if file_path.split(".")[-1] == "npz":
+        with np.load(file_path, allow_pickle=True) as f:
+            X, Y = f['X'], f['Y']
+    if file_path.split(".")[-1] == "csv" and "snips" in file_path.split(".")[-2]:
+        X, Y = process_snips_data(file_path, w2v_path)
+    elif file_path.split(".")[-1] == "csv" and "agnews" in file_path.split(".")[-2]:
+        X, Y = process_agnews_data(file_path, w2v_path)
+
+    weight_state, mymethod = [], []
+    right, hscov_max_index, trend_set = [], [], []
+
+    diss = []
+    deepgini_set = []
+    feature_mat=[]
+    for idx, (x, y) in enumerate(zip(X, Y)):
+        if file_path.split(".")[-1] == "npz" and "svhn" in file_path.split(".")[-2]:
+            x_test = svhn_input_preprocess(np.array([x]))
+            feature_mat.append(x_test)
+            y_test = keras.utils.to_categorical(np.array([y]), num_classes=10)
+        elif file_path.split(".")[-1] == "npz" and "svhn" not in file_path.split(".")[-2]:
+            x_test = mnist_input_preprocess(np.array([x]))
+            feature_mat.append(x_test)
+            y_test = keras.utils.to_categorical(np.array([y]), num_classes=10)
+        else:
+            x_test = np.array([x])
+            feature_mat.append(x_test)
+            y_test = y
+
+        classify_out_list, plus_sum, minus_sum = [], [], []
+        lstm_out = model.predict(x_test)[1]
+
+        gini_seq = []
+        vector_seq = []
+        weighted_deepgini = 0
+        weighted_maxp = 0
+        weight_sum = 0
+
+        for t in range(time_steps):
+            lstm_t = lstm_out[0][t]
+            plus_sum.append(sum([lstm_ti for lstm_ti in lstm_t if lstm_ti > 0]))
+            minus_sum.append(sum([lstm_ti for lstm_ti in lstm_t if lstm_ti < 0]))
+            dense_array = lambda x: x[:, t, :]
+            tmp = dense_model.predict(np.array(dense_array(lstm_out)))
+            vector_seq.append([item for sublist in tmp.tolist() for item in sublist])
+            gini_seq.append(cal_distance(tmp))
+            confident = np.max(tmp)
+            # 计算权重
+            weight = t ** 0.1
+            weight_sum += weight
+            deepgini = calculate_gini(tmp)
+            weighted_deepgini += weight * deepgini
+            if confident >= 0.5 and t != (time_steps - 1):
+                classify_out_list.append(np.argmax(tmp))
+            elif t == (time_steps - 1):
+                classify_out_list.append(np.argmax(tmp))
+
+
+
+        mymethod.append(cal_weight_dis(np.array(gini_seq)))
+        diss.append(deal_vecseq(vector_seq))
+        # 最终的deepgini和maxp值
+        deepgini_set.append(weighted_deepgini / weight_sum)
+
+
+        trend_set.append(get_change_set(classify_out_list))
+        weight_state.append(cacl_change_rate_with_weights(classify_out_list))
+
+        # check the predict result is right or wrong
+        check_predict_result(int(classify_out_list[-1]), int(np.argmax(y_test)), right)
+
+    final = [mymethod, diss]
+    return feature_mat, weight_state, final, trend_set, right, deepgini_set
 
 
 def get_selected_data(file_path, selected_li, w2v_path):

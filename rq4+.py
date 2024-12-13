@@ -15,7 +15,8 @@ config = tf.compat.v1.ConfigProto()
 config.gpu_options.allow_growth = True  # Do not occupy all of the memory, allocate on demand
 sess = tf.compat.v1.Session(config=config)
 
-K.set_session(sess)
+tf.compat.v1.keras.backend.set_session(sess)
+# K.set_session(sess)
 
 # RQ4: Retrain the RNNs with selected data
 if __name__ == '__main__':
@@ -84,8 +85,8 @@ if __name__ == '__main__':
         from RNNModels.snips_demo.snips_blstm import SnipsBLSTMClassifier
 
         lstm_classifier = SnipsBLSTMClassifier()
-        lstm_classifier.data_path = "./RNNModels/snips_demo/save/standard_data.npz"
-        lstm_classifier.embedding_path = "./RNNModels/snips_demo/save/embedding_matrix.npy"
+        lstm_classifier.data_path = "./RNNModels/snips_demo/save_aug/standard_data.npz"
+        lstm_classifier.embedding_path = "./RNNModels/snips_demo/save_aug/embedding_matrix.npy"
         model = lstm_classifier.load_hidden_state_model(args.dl_model)
         dense_classifier = SnipsBLSTMClassifier()
         dense_model = dense_classifier.reload_dense(args.dl_model)
@@ -96,7 +97,7 @@ if __name__ == '__main__':
         mix_val_path = "./gen_data/snips_retrain/snips_mix_test.csv"
         retrain_save_path = "./RNNModels/snips_demo/models/blstm_selected_"
         wrapper_path = "./RNNModels/snips_demo/output/blstm/abst_model/wrapper_blstm_snips_3_10.pkl"
-        w2v_path = "./RNNModels/snips_demo/save/w2v_model"
+        w2v_path = "./RNNModels/snips_demo/save_aug/w2v_model"
         total_num = 4996
 
     elif args.model_type == "gru" and args.dataset == "snips":
@@ -104,8 +105,8 @@ if __name__ == '__main__':
         from RNNModels.snips_demo.snips_gru import SnipsGRUClassifier
 
         lstm_classifier = SnipsGRUClassifier()
-        lstm_classifier.data_path = "./RNNModels/snips_demo/save/standard_data.npz"
-        lstm_classifier.embedding_path = "./RNNModels/snips_demo/save/embedding_matrix.npy"
+        lstm_classifier.data_path = "./RNNModels/snips_demo/save_aug/standard_data.npz"
+        lstm_classifier.embedding_path = "./RNNModels/snips_demo/save_aug/embedding_matrix.npy"
         model = lstm_classifier.load_hidden_state_model(args.dl_model)
         dense_classifier = SnipsGRUClassifier()
         dense_model = dense_classifier.reload_dense(args.dl_model)
@@ -116,7 +117,7 @@ if __name__ == '__main__':
         mix_val_path = "./gen_data/snips_retrain/snips_mix_test.csv"
         retrain_save_path = "./RNNModels/snips_demo/models/gru_selected_"
         wrapper_path = "./RNNModels/snips_demo/output/gru/abst_model/wrapper_gru_snips_3_10.pkl"
-        w2v_path = "./RNNModels/snips_demo/save/w2v_model"
+        w2v_path = "./RNNModels/snips_demo/save_aug/w2v_model"
         total_num = 4996
 
     elif args.model_type == "lstm" and args.dataset == "snips":
@@ -124,8 +125,8 @@ if __name__ == '__main__':
         from RNNModels.snips_demo.snips_lstm import SnipsLSTMClassifier
 
         lstm_classifier = SnipsLSTMClassifier()
-        lstm_classifier.data_path = "./RNNModels/snips_demo/save/standard_data.npz"
-        lstm_classifier.embedding_path = "./RNNModels/snips_demo/save/embedding_matrix.npy"
+        lstm_classifier.data_path = "./RNNModels/snips_demo/save_aug/standard_data.npz"
+        lstm_classifier.embedding_path = "./RNNModels/snips_demo/save_aug/embedding_matrix.npy"
         model = lstm_classifier.load_hidden_state_model(args.dl_model)
         dense_classifier = SnipsLSTMClassifier()
         dense_model = dense_classifier.reload_dense(args.dl_model)
@@ -136,7 +137,7 @@ if __name__ == '__main__':
         mix_val_path = "./gen_data/snips_retrain/snips_mix_test.csv"
         retrain_save_path = "./RNNModels/snips_demo/models/lstm_selected_"
         wrapper_path = "./RNNModels/snips_demo/output/lstm/abst_model/wrapper_lstm_snips_3_10.pkl"
-        w2v_path = "./RNNModels/snips_demo/save/w2v_model"
+        w2v_path = "./RNNModels/snips_demo/save_aug/w2v_model"
         total_num = 4996
 
     elif args.model_type == "lstm" and args.dataset == "fashion":
@@ -198,8 +199,8 @@ if __name__ == '__main__':
         from RNNModels.agnews_demo.agnews_lstm import AGNewsLSTMClassifier
 
         lstm_classifier = AGNewsLSTMClassifier()
-        lstm_classifier.data_path = "./RNNModels/agnews_demo/save/standard_data.npz"
-        lstm_classifier.embedding_path = "./RNNModels/agnews_demo/save/embedding_matrix.npy"
+        lstm_classifier.data_path = "./RNNModels/agnews_demo/save_aug/standard_data.npz"
+        lstm_classifier.embedding_path = "./RNNModels/agnews_demo/save_aug/embedding_matrix.npy"
         model = lstm_classifier.load_hidden_state_model(args.dl_model)
         dense_classifier = AGNewsLSTMClassifier()
         dense_model = dense_classifier.reload_dense(args.dl_model)
@@ -210,7 +211,7 @@ if __name__ == '__main__':
         mix_val_path = "./gen_data/agnews_retrain/agnews_mix_test.csv"
         retrain_save_path = "./RNNModels/agnews_demo/models/lstm_selected_"
         wrapper_path = "./RNNModels/agnews_demo/output/lstm/abst_model/wrapper_lstm_agnews_3_10.pkl"
-        w2v_path = "./RNNModels/agnews_demo/save/w2v_model"
+        w2v_path = "./RNNModels/agnews_demo/save_aug/w2v_model"
         total_num = 15200
 
     elif args.model_type == "blstm" and args.dataset == "agnews":
@@ -218,8 +219,8 @@ if __name__ == '__main__':
         from RNNModels.agnews_demo.agnews_blstm import AgnewsBLSTMClassifier
 
         lstm_classifier = AgnewsBLSTMClassifier()
-        lstm_classifier.data_path = "./RNNModels/agnews_demo/save/standard_data.npz"
-        lstm_classifier.embedding_path = "./RNNModels/agnews_demo/save/embedding_matrix.npy"
+        lstm_classifier.data_path = "./RNNModels/agnews_demo/save_aug/standard_data.npz"
+        lstm_classifier.embedding_path = "./RNNModels/agnews_demo/save_aug/embedding_matrix.npy"
         model = lstm_classifier.load_hidden_state_model(args.dl_model)
         dense_classifier = AgnewsBLSTMClassifier()
         dense_model = dense_classifier.reload_dense(args.dl_model)
@@ -230,7 +231,7 @@ if __name__ == '__main__':
         mix_val_path = "./gen_data/agnews_retrain/agnews_mix_test.csv"
         retrain_save_path = "./RNNModels/agnews_demo/models/blstm_selected_"
         wrapper_path = "./RNNModels/agnews_demo/output/blstm/abst_model/wrapper_blstm_agnews_3_10.pkl"
-        w2v_path = "./RNNModels/agnews_demo/save/w2v_model"
+        w2v_path = "./RNNModels/agnews_demo/save_aug/w2v_model"
         total_num = 15200
 
     elif args.model_type == "gru" and args.dataset == "agnews":
@@ -238,8 +239,8 @@ if __name__ == '__main__':
         from RNNModels.agnews_demo.agnews_gru import AgnewsGRUClassifier
 
         lstm_classifier = AgnewsGRUClassifier()
-        lstm_classifier.data_path = "./RNNModels/agnews_demo/save/standard_data.npz"
-        lstm_classifier.embedding_path = "./RNNModels/agnews_demo/save/embedding_matrix.npy"
+        lstm_classifier.data_path = "./RNNModels/agnews_demo/save_aug/standard_data.npz"
+        lstm_classifier.embedding_path = "./RNNModels/agnews_demo/save_aug/embedding_matrix.npy"
         model = lstm_classifier.load_hidden_state_model(args.dl_model)
         dense_classifier = AgnewsGRUClassifier()
         dense_model = dense_classifier.reload_dense(args.dl_model)
@@ -250,7 +251,7 @@ if __name__ == '__main__':
         mix_val_path = "./gen_data/agnews_retrain/agnews_mix_test.csv"
         retrain_save_path = "./RNNModels/agnews_demo/models/gru_selected_"
         wrapper_path = "./RNNModels/agnews_demo/output/gru/abst_model/wrapper_gru_agnews_3_10.pkl"
-        w2v_path = "./RNNModels/agnews_demo/save/w2v_model"
+        w2v_path = "./RNNModels/agnews_demo/save_aug/w2v_model"
         total_num = 15200
 
     elif args.model_type == "lstm" and args.dataset == "svhn":
@@ -358,12 +359,13 @@ if __name__ == '__main__':
                                                                    w2v_path)
             print("len(X_selected_array):", len(X_selected_array))
             retrained_model_path = retrain_save_path + str(pre) + "/" + str(method_item) + "_" + \
-                                   str(args.dataset) + "_" + str(args.model_type) + ".h5"
+                                   str(args.dataset) + "_" + str(args.model_type) + "_dauretrain.h5"
             if not os.path.isfile(retrained_model_path):  # Has not been saved, needs to be trained
                 os.makedirs(retrain_save_path + str(pre), exist_ok=True)
-                lstm_classifier.retrain(X_selected_array, Y_selected_array, x_aug_val, y_aug_val, retrained_model_path)
+                lstm_classifier.dau_retrain(args.dl_model, X_selected_array, Y_selected_array, x_aug_val, y_aug_val, retrained_model_path)
 
-            K.clear_session()
+            # K.clear_session()
+            tf.compat.v1.keras.backend.clear_session()
 
             ori_acc_tmp, ori_imp_tmp = lstm_classifier.evaluate_retrain(retrained_model_path, args.dl_model, x_ori_val,
                                                                         y_ori_val)
